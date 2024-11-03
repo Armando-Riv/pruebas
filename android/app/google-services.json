@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "672490412486",
+    "project_id": "proyectocustos",
+    "storage_bucket": "proyectocustos.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:672490412486:android:830d1fee31ab0c3cc3fac7",
+        "android_client_info": {
+          "package_name": "arm.custos"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQzpywvcD7HHQdHs5rM18Wkfpt72qynuk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,47 @@
+plugins {
+    id "com.android.application"
+    id 'com.google.gms.google-services'
+    id "kotlin-android"
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+dependencies {
+    implementation platform('com.google.firebase:firebase-bom:33.4.0')
+    implementation 'com.google.firebase:firebase-analytics'
+}
+
+android {
+    namespace = "arm.custos"
+    compileSdkVersion 34  // Reemplaza con el valor directo
+
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        applicationId = "arm.custos"
+        // Reemplaza las variables de Flutter por valores específicos:
+        minSdkVersion 23// Valor explícito
+        targetSdkVersion 34  // Asegúrate de que sea la misma versión que compileSdkVersion
+        versionCode 1  // Puedes cambiarlo por el código de versión que necesites
+        versionName "1.0"  // La versión que desees
+    }
+
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.debug
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}
