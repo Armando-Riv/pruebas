@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
+  @override
+  _RegisterScreenState createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
 
   @override
   Widget build(BuildContext context) {
@@ -29,11 +38,7 @@ class RegisterScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.help_outline, color: Colors.white),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Ayuda no disponible aún.')),
-              );
-            },
+            onPressed: _showHelpDialog, // Llamamos a la función para mostrar ayuda
           ),
         ],
       ),
@@ -70,40 +75,112 @@ class RegisterScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   _buildTextField(
-                    labelText: 'Nombre',
                     hintText: 'Ingresa tu nombre',
+                    icon: Icons.person,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingresa tu nombre';
+                      }
+                      if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
+                        return 'El nombre solo debe contener letras';
+                      }
+                      if (value.length < 2) {
+                        return 'El nombre debe tener al menos 2 caracteres';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 15),
                   _buildTextField(
-                    labelText: 'Apellido',
                     hintText: 'Ingresa tu apellido',
+                    icon: Icons.person_outline,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingresa tu apellido';
+                      }
+                      if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
+                        return 'El apellido solo debe contener letras';
+                      }
+                      if (value.length < 2) {
+                        return 'El apellido debe tener al menos 2 caracteres';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 15),
                   _buildTextField(
-                    labelText: 'Correo electrónico',
                     hintText: 'Ingresa tu correo',
+                    icon: Icons.email,
                     keyboardType: TextInputType.emailAddress,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingresa tu correo';
+                      }
+                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                        return 'Ingresa un correo válido';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 15),
                   _buildPasswordField(
                     controller: _passwordController,
-                    labelText: 'Contraseña',
                     hintText: 'Crea una contraseña',
+                    icon: Icons.lock,
+                    isPasswordVisible: _isPasswordVisible,
+                    togglePasswordVisibility: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingresa una contraseña';
+                      }
+                      if (value.length < 6) {
+                        return 'La contraseña debe tener al menos 6 caracteres';
+                      }
+                      if (!RegExp(r'(?=.*[A-Z])').hasMatch(value)) {
+                        return 'Debe contener al menos una letra mayúscula';
+                      }
+                      if (!RegExp(r'(?=.*\d)').hasMatch(value)) {
+                        return 'Debe contener al menos un número';
+                      }
+                      if (!RegExp(r'(?=.*[@$!%*?&])').hasMatch(value)) {
+                        return 'Debe contener al menos un carácter especial (@\$!%*?&)';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 15),
                   _buildPasswordField(
                     controller: _confirmPasswordController,
-                    labelText: 'Confirmar Contraseña',
                     hintText: 'Repite tu contraseña',
+                    icon: Icons.lock_outline,
                     confirmPassword: true,
+                    isPasswordVisible: _isConfirmPasswordVisible,
+                    togglePasswordVisibility: () {
+                      setState(() {
+                        _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                      });
+                    },
+                    validator: (value) {
+                      if (value != _passwordController.text) {
+                        return 'Las contraseñas no coinciden';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Registrando...')),
+                          const SnackBar(content: Text('Registrado exitosamente!')),
                         );
+                        Timer(Duration(seconds: 2), () {
+                          Navigator.pushReplacementNamed(context, '/login');
+                        });
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -125,75 +202,108 @@ class RegisterScreen extends StatelessWidget {
     );
   }
 
-  // Método para construir un campo de texto personalizado
-  Widget _buildTextField({
-    required String labelText,
-    required String hintText,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return TextFormField(
-      decoration: InputDecoration(
-        labelText: labelText,
-        labelStyle: const TextStyle(color: Colors.black), // Color negro para el label
-        hintText: hintText,
-        hintStyle: const TextStyle(color: Colors.black54), // Color negro tenue para el hint
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30.0),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30.0),
-          borderSide: const BorderSide(color: Colors.blue), // Cambia el color aquí
-        ),
-      ),
-      keyboardType: keyboardType,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Por favor completa este campo';
-        }
-        return null;
+  // Función para mostrar el cuadro de diálogo de ayuda
+  void _showHelpDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Ayuda para el registro'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Text('Nombre y Apellido: Solo letras, mínimo 2 caracteres.'),
+              SizedBox(height: 8),
+              Text('Correo Electrónico: Debe tener un formato válido.'),
+              SizedBox(height: 8),
+              Text(
+                  'Contraseña: Mínimo 6 caracteres, incluyendo una letra mayúscula, un número y un carácter especial.'),
+              SizedBox(height: 8),
+              Text(
+                  'Confirmar Contraseña: Asegúrate de que coincida con la contraseña ingresada anteriormente.'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Entendido'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
       },
     );
   }
 
-  // Método para construir un campo de contraseña
-  Widget _buildPasswordField({
-    required TextEditingController controller,
-    required String labelText,
+  Widget _buildTextField({
     required String hintText,
-    bool confirmPassword = false,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
   }) {
     return TextFormField(
-      controller: controller,
       decoration: InputDecoration(
-        labelText: labelText,
-        labelStyle: const TextStyle(color: Colors.black), // Color negro para el label
         hintText: hintText,
-        hintStyle: const TextStyle(color: Colors.black54), // Color negro tenue para el hint
+        hintStyle: const TextStyle(
+          color: Colors.black54,
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
         filled: true,
         fillColor: Colors.white,
+        prefixIcon: Icon(icon, color: Colors.black54), // Agregamos el ícono aquí
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30.0),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30.0),
-          borderSide: const BorderSide(color: Colors.blue), // Cambia el color aquí
+          borderSide: const BorderSide(color: Colors.blue),
         ),
       ),
-      obscureText: true,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Por favor completa este campo';
-        }
-        if (confirmPassword && value != _passwordController.text) {
-          return 'Las contraseñas no coinciden';
-        }
-        if (!confirmPassword && value.length < 6) {
-          return 'La contraseña debe tener al menos 6 caracteres';
-        }
-        return null;
-      },
+      keyboardType: keyboardType,
+      validator: validator,
+    );
+  }
+
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String hintText,
+    required IconData icon,
+    bool confirmPassword = false,
+    required bool isPasswordVisible,
+    required VoidCallback togglePasswordVisibility,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: const TextStyle(
+          color: Colors.black54,
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        prefixIcon: Icon(icon, color: Colors.black54), // Agregamos el ícono aquí
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30.0),
+          borderSide: const BorderSide(color: Colors.blue),
+        ),
+        suffixIcon: IconButton(
+          icon: Icon(
+            isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+            color: Colors.black54,
+          ),
+          onPressed: togglePasswordVisibility,
+        ),
+      ),
+      obscureText: !isPasswordVisible,
+      validator: validator,
     );
   }
 }
