@@ -20,6 +20,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(), // Pantalla de registro
         '/home': (context) => HomeScreen(), // Pantalla principal
+
       },
     );
   }
