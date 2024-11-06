@@ -16,8 +16,8 @@ class CustomButton extends StatelessWidget {
     required this.text,
     required this.onPressed,
     this.textSize = 20.0,
-    this.backgroundColor = const Color.fromARGB(255, 0, 39, 152), // Color de fondo por defecto
-    this.textColor = Colors.white, // Color de texto e ícono por defecto
+    this.backgroundColor = const Color.fromARGB(255, 0, 39, 152),
+    this.textColor = Colors.white,
   }) : super(key: key);
 
   @override
@@ -26,7 +26,7 @@ class CustomButton extends StatelessWidget {
       onPressed: onPressed,
       icon: Icon(
         icon,
-        color: textColor, // Cambiar el color del ícono
+        color: textColor,
       ),
       label: Text(
         text,
@@ -58,7 +58,7 @@ class WelcomeScreen extends StatelessWidget {
                 ? Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Imagen en modo horizontal
+
                 Padding(
                   padding: const EdgeInsets.only(right: 20.0),
                   child: Image.asset(
@@ -77,8 +77,8 @@ class WelcomeScreen extends StatelessWidget {
                       onPressed: () {
                         Navigator.pushNamed(context, '/login');
                       },
-                      backgroundColor: Colors.black38, // Personalizar color de fondo
-                      textColor: Colors.white, // Personalizar color del texto y del ícono
+                      backgroundColor: Colors.black38,
+                      textColor: Colors.white,
                     ),
                     const SizedBox(height: 60),
                     CustomButton(
@@ -87,8 +87,8 @@ class WelcomeScreen extends StatelessWidget {
                       onPressed: () {
                         Navigator.pushNamed(context, '/register');
                       },
-                      backgroundColor: Colors.white, // Personalizar color de fondo
-                      textColor: Colors.blueGrey, // Personalizar color del texto y del ícono
+                      backgroundColor: Colors.white,
+                      textColor: Colors.blueGrey,
                     ),
                   ],
                 ),
@@ -113,8 +113,8 @@ class WelcomeScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.pushNamed(context, '/login');
                   },
-                  backgroundColor: Colors.black38, // Personalizar color de fondo
-                  textColor: Colors.white, // Personalizar color del texto y del ícono
+                  backgroundColor: Colors.black38,
+                  textColor: Colors.white,
                 ),
                 const SizedBox(height: 30),
                 CustomButton(
@@ -123,8 +123,8 @@ class WelcomeScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.pushNamed(context, '/register');
                   },
-                  backgroundColor: Colors.white, // Personalizar color de fondo
-                  textColor: Colors.blueGrey, // Personalizar color del texto y del ícono
+                  backgroundColor: Colors.white,
+                  textColor: Colors.blueGrey,
                 ),
                 const SizedBox(height: 50),
               ],
