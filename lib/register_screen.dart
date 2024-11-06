@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:async';
+
+import 'font_size_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -16,13 +19,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Registro',
           style: TextStyle(
-            fontSize: 24,
-           
+            fontSize: fontSizeProvider.fontSize,
+            fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
         ),
@@ -37,6 +42,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.settings, color: Colors.white),
+            onPressed: () {
+              Navigator.pushNamed(context, '/settings'); // Dirige a la pantalla de configuración
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.help_outline, color: Colors.white),
             onPressed: _showHelpDialog,
           ),
@@ -48,7 +59,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 20), // Espacio superior
+            const SizedBox(height: 30),
 
             const SizedBox(height: 20),
             Container(
@@ -64,16 +75,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ],
               ),
-
               child: Form(
-
                 key: _formKey,
                 child: Column(
                   children: [
-                    const Text(
+                    Text(
                       'Crea tu cuenta',
                       style: TextStyle(
-                        fontSize: 26,
+                        fontSize: fontSizeProvider.fontSize + 4, // Tamaño ligeramente mayor para el título
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -81,6 +90,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 20),
                     _buildTextField(
+                      context,
                       hintText: 'Ingresa tu nombre',
                       icon: Icons.person,
                       validator: (value) {
@@ -98,6 +108,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 15),
                     _buildTextField(
+                      context,
                       hintText: 'Ingresa tu apellido',
                       icon: Icons.person_outline,
                       validator: (value) {
@@ -115,6 +126,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 15),
                     _buildTextField(
+                      context,
                       hintText: 'Ingresa tu correo',
                       icon: Icons.email,
                       keyboardType: TextInputType.emailAddress,
@@ -130,6 +142,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 15),
                     _buildPasswordField(
+                      context,
                       controller: _passwordController,
                       hintText: 'Crea una contraseña',
                       icon: Icons.lock,
@@ -160,6 +173,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 15),
                     _buildPasswordField(
+                      context,
                       controller: _confirmPasswordController,
                       hintText: 'Repite tu contraseña',
                       icon: Icons.lock_outline,
@@ -190,14 +204,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
+                        backgroundColor: Colors.black26,
                         foregroundColor: Colors.white,
                         minimumSize: const Size(150, 50),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30.0),
                         ),
                       ),
-                      child: const Text('Registrarse'),
+                      child: Text(
+                        'Registrarse',
+                        style: TextStyle(fontSize: fontSizeProvider.fontSize+1),
+                      ),
                     ),
                   ],
                 ),
@@ -240,19 +257,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildTextField({
+  Widget _buildTextField(BuildContext context, {
     required String hintText,
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
   }) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
     return TextFormField(
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(
+        hintStyle: TextStyle(
+          fontSize: fontSizeProvider.fontSize,
           color: Colors.black54,
-         
-          fontSize: 16,
+          fontWeight: FontWeight.bold,
         ),
         filled: true,
         fillColor: Colors.white,
@@ -270,7 +288,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildPasswordField({
+  Widget _buildPasswordField(BuildContext context, {
     required TextEditingController controller,
     required String hintText,
     required IconData icon,
@@ -279,14 +297,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
     required VoidCallback togglePasswordVisibility,
     String? Function(String?)? validator,
   }) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(
+        hintStyle: TextStyle(
+          fontSize: fontSizeProvider.fontSize,
           color: Colors.black54,
-         
-          fontSize: 16,
+          fontWeight: FontWeight.bold,
         ),
         filled: true,
         fillColor: Colors.white,

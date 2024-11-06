@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'font_size_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -31,12 +33,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Inicio de Sesión',
           style: TextStyle(
-            fontSize: 24,
+            fontSize: fontSizeProvider.fontSize+5,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
@@ -50,18 +54,23 @@ class _LoginScreenState extends State<LoginScreen> {
             Navigator.pop(context);
           },
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings, color: Colors.white),
+            onPressed: () {
+              Navigator.pushNamed(context, '/settings');
+            },
+          ),
+        ],
       ),
       backgroundColor: const Color.fromARGB(198, 137, 215, 249),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // Alineación a la izquierda
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 20), // Espacio inicial
-
             const SizedBox(height: 20),
             Container(
-
               padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
                 color: Colors.black26,
@@ -75,15 +84,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 10),
-                  const Text(
+                  Text(
                     'Bienvenido de nuevo',
                     style: TextStyle(
-                      fontSize: 26,
+                      fontSize: fontSizeProvider.fontSize + 4,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 20),
                   // Campo de correo electrónico con ícono
@@ -92,7 +102,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       hintText: 'Ingresa tu correo',
-                      hintStyle: const TextStyle(color: Colors.black54, fontWeight: FontWeight.bold),
+                      hintStyle: TextStyle(
+                        color: Colors.black54,
+                        fontWeight: FontWeight.bold,
+                        fontSize: fontSizeProvider.fontSize,
+                      ),
                       filled: true,
                       fillColor: Colors.white,
                       prefixIcon: const Icon(Icons.email, color: Colors.black54),
@@ -112,7 +126,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     obscureText: !_isPasswordVisible,
                     decoration: InputDecoration(
                       hintText: 'Ingresa tu contraseña',
-                      hintStyle: const TextStyle(color: Colors.black54, fontWeight: FontWeight.bold),
+                      hintStyle: TextStyle(
+                        color: Colors.black54,
+                        fontWeight: FontWeight.bold,
+                        fontSize: fontSizeProvider.fontSize,
+                      ),
                       filled: true,
                       fillColor: Colors.white,
                       prefixIcon: const Icon(Icons.lock, color: Colors.black54),
@@ -149,20 +167,26 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       elevation: 5,
                     ),
-                    child: const Text(
+                    child: Text(
                       'Iniciar Sesión',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: fontSizeProvider.fontSize,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 10),
                   // Link para recuperación de contraseña
                   TextButton(
                     onPressed: () {
-                      // Aquí podrías implementar la lógica para la recuperación de contraseña
+                      // Implementa la lógica para la recuperación de contraseña
                     },
-                    child: const Text(
+                    child: Text(
                       '¿Olvidaste tu contraseña?',
-                      style: TextStyle(color: Colors.white70, fontSize: 16),
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: fontSizeProvider.fontSize - 2,
+                      ),
                     ),
                   ),
                 ],
