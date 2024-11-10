@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'font_size_provider.dart';
 
 // Widget personalizado para los botones
 class CustomButton extends StatelessWidget {
@@ -15,7 +16,7 @@ class CustomButton extends StatelessWidget {
     required this.icon,
     required this.text,
     required this.onPressed,
-    this.textSize = 20.0,
+    this.textSize =25,
     this.backgroundColor = const Color.fromARGB(255, 0, 39, 152),
     this.textColor = Colors.white,
   }) : super(key: key);
@@ -34,6 +35,7 @@ class CustomButton extends StatelessWidget {
           fontSize: textSize, // Aplicar el tamaño del texto
           color: textColor, // Cambiar el color del texto
         ),
+
       ),
       style: ElevatedButton.styleFrom(
         backgroundColor: backgroundColor, // Aplicar el color de fondo

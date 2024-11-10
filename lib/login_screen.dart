@@ -37,10 +37,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       appBar: AppBar(
+
         title: Text(
           'Inicio de Sesión',
           style: TextStyle(
-            fontSize: fontSizeProvider.fontSize+5,
+            fontSize: fontSizeProvider.fontSize + 5,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
@@ -56,18 +57,19 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, color: Colors.white),
+            icon: const Icon(Icons.text_fields, color: Colors.white),
             onPressed: () {
-              Navigator.pushNamed(context, '/settings');
+              _showFontSizeDialog(context, fontSizeProvider);
             },
           ),
+
         ],
       ),
       backgroundColor: const Color.fromARGB(198, 137, 215, 249),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 20),
             Container(
@@ -75,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
               decoration: BoxDecoration(
                 color: Colors.black26,
                 borderRadius: BorderRadius.circular(20.0),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
                     color: Colors.black12,
                     blurRadius: 10.0,
@@ -195,6 +197,74 @@ class _LoginScreenState extends State<LoginScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showFontSizeDialog(BuildContext context, FontSizeProvider fontSizeProvider) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Colors.black26,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              title: const Center(
+                child: Text(
+                  'Ajustar tamaño de letra',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Tamaño actual: ${fontSizeProvider.fontSize.toStringAsFixed(1)}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.white70,
+                    ),
+                  ),
+                  Slider(
+                    min: 16.0,
+                    max: 26.0,
+                    value: fontSizeProvider.fontSize,
+                    activeColor: Colors.blueAccent,
+                    inactiveColor: Colors.grey,
+                    onChanged: (newSize) {
+                      fontSizeProvider.setFontSize(newSize);
+                      setState(() {}); // Actualiza visualmente el diálogo
+                    },
+                  ),
+                ],
+              ),
+              actionsAlignment: MainAxisAlignment.center,
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text(
+                    'Cerrar',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueAccent,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

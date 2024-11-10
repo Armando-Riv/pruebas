@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-
 import 'font_size_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -42,9 +41,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, color: Colors.white),
+            icon: const Icon(Icons.text_fields, color: Colors.white),
             onPressed: () {
-              Navigator.pushNamed(context, '/settings'); // Dirige a la pantalla de configuración
+              _showFontSizeDialog(context, fontSizeProvider);
             },
           ),
           IconButton(
@@ -60,8 +59,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 30),
-
-            const SizedBox(height: 20),
             Container(
               padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
@@ -82,7 +79,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Text(
                       'Crea tu cuenta',
                       style: TextStyle(
-                        fontSize: fontSizeProvider.fontSize + 4, // Tamaño ligeramente mayor para el título
+                        fontSize: fontSizeProvider.fontSize + 4,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -198,7 +195,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Registrado exitosamente!')),
                           );
-                          Timer(Duration(seconds: 2), () {
+                          Timer(const Duration(seconds: 2), () {
                             Navigator.pushReplacementNamed(context, '/login');
                           });
                         }
@@ -206,14 +203,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black26,
                         foregroundColor: Colors.white,
-                        minimumSize: const Size(150, 50),
+                        minimumSize: const Size(200, 58),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30.0),
                         ),
                       ),
                       child: Text(
                         'Registrarse',
-                        style: TextStyle(fontSize: fontSizeProvider.fontSize+1),
+                        style: TextStyle(fontSize: fontSizeProvider.fontSize + 1),
                       ),
                     ),
                   ],
@@ -226,27 +223,116 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  void _showFontSizeDialog(BuildContext context, FontSizeProvider fontSizeProvider) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Colors.black26,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              title: const Center(
+                child: Text(
+                  'Ajustar tamaño de letra',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Tamaño actual: ${fontSizeProvider.fontSize.toStringAsFixed(1)}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.white70,
+                    ),
+                  ),
+                  Slider(
+                    min: 16.0,
+                    max: 26.0,
+                    value: fontSizeProvider.fontSize,
+                    activeColor: Colors.blueAccent,
+                    inactiveColor: Colors.grey,
+                    onChanged: (newSize) {
+                      fontSizeProvider.setFontSize(newSize);
+                      setState(() {}); // Actualiza visualmente el diálogo
+                    },
+                  ),
+                ],
+              ),
+              actionsAlignment: MainAxisAlignment.center,
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text(
+                    'Cerrar',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueAccent,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _showHelpDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Ayuda para el registro'),
-          content: const Column(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          title: const Center(
+            child: Text(
+              'Ayuda para el registro',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.blueAccent,
+              ),
+            ),
+          ),
+          content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Nombre y Apellido: Solo letras, mínimo 2 caracteres.'),
-              SizedBox(height: 8),
-              Text('Correo Electrónico: Debe tener un formato válido.'),
-              SizedBox(height: 8),
-              Text('Contraseña: Mínimo 6 caracteres, incluyendo una letra mayúscula, un número y un carácter especial.'),
-              SizedBox(height: 8),
-              Text('Confirmar Contraseña: Asegúrate de que coincida con la contraseña ingresada anteriormente.'),
+              _buildHelpText('Nombre y Apellido: Solo letras, mínimo 2 caracteres.'),
+              _buildHelpText('Correo Electrónico: Debe tener un formato válido.'),
+              _buildHelpText(
+                  'Contraseña: Mínimo 6 caracteres, incluyendo una letra mayúscula, un número y un carácter especial.'),
+              _buildHelpText('Confirmar Contraseña: Asegúrate de que coincida con la contraseña ingresada anteriormente.'),
             ],
           ),
+          actionsAlignment: MainAxisAlignment.center,
           actions: [
-            TextButton(
-              child: const Text('Entendido'),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+              ),
+              child: const Text(
+                'Entendido',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -257,12 +343,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildTextField(BuildContext context, {
-    required String hintText,
-    required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-    String? Function(String?)? validator,
-  }) {
+  Widget _buildHelpText(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 16,
+          color: Colors.black87,
+          fontWeight: FontWeight.w500,
+        ),
+        textAlign: TextAlign.left,
+      ),
+    );
+  }
+
+  Widget _buildTextField(
+      BuildContext context, {
+        required String hintText,
+        required IconData icon,
+        TextInputType keyboardType = TextInputType.text,
+        String? Function(String?)? validator,
+      }) {
     final fontSizeProvider = Provider.of<FontSizeProvider>(context);
     return TextFormField(
       decoration: InputDecoration(
@@ -282,21 +384,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
           borderRadius: BorderRadius.circular(30.0),
           borderSide: const BorderSide(color: Colors.blue),
         ),
+        errorStyle: TextStyle(
+          fontSize: fontSizeProvider.fontSize - 1, // Ajusta el tamaño de los mensajes de error
+          color: Colors.red,
+        ),
       ),
       keyboardType: keyboardType,
       validator: validator,
     );
   }
 
-  Widget _buildPasswordField(BuildContext context, {
-    required TextEditingController controller,
-    required String hintText,
-    required IconData icon,
-    bool confirmPassword = false,
-    required bool isPasswordVisible,
-    required VoidCallback togglePasswordVisibility,
-    String? Function(String?)? validator,
-  }) {
+  Widget _buildPasswordField(
+      BuildContext context, {
+        required TextEditingController controller,
+        required String hintText,
+        required IconData icon,
+        bool confirmPassword = false,
+        required bool isPasswordVisible,
+        required VoidCallback togglePasswordVisibility,
+        String? Function(String?)? validator,
+      }) {
     final fontSizeProvider = Provider.of<FontSizeProvider>(context);
     return TextFormField(
       controller: controller,
@@ -316,6 +423,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30.0),
           borderSide: const BorderSide(color: Colors.blue),
+        ),
+        errorStyle: TextStyle(
+          fontSize: fontSizeProvider.fontSize - 1,
+          color: Colors.red,
         ),
         suffixIcon: IconButton(
           icon: Icon(
