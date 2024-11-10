@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'font_size_provider.dart';
+
 
 // Widget personalizado para los botones
 class CustomButton extends StatelessWidget {
@@ -50,6 +50,7 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: const Color.fromARGB(198, 137, 215, 249),
       body: LayoutBuilder(
         builder: (context, constraints) {

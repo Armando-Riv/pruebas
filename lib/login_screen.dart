@@ -15,29 +15,100 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _isPasswordVisible = false;
 
-  // Función para iniciar sesión
+// Función para iniciar sesión
   Future<void> _login() async {
     try {
       await _auth.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      // Si el inicio de sesión es exitoso, redirige a la pantalla principal
       Navigator.pushReplacementNamed(context, '/home');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
+      _showErrorDialog(_getSpanishErrorMessage(e.toString()));
     }
   }
+
+// Función para mostrar mensajes de error en español
+  String _getSpanishErrorMessage(String errorCode) {
+    final errorMessages = {
+      'user-not-found': 'Usuario no encontrado. Por favor, verifica tu correo.',
+      'wrong-password': 'Contraseña incorrecta. Inténtalo de nuevo.',
+      'invalid-email': 'Correo electrónico no válido. Introdúcelo de nuevo.',
+    };
+
+    // Iteramos sobre las claves para encontrar el mensaje adecuado.
+    for (var key in errorMessages.keys) {
+      if (errorCode.contains(key)) {
+        return errorMessages[key]!;
+      }
+    }
+
+    // Mensaje genérico en caso de error desconocido.
+    return 'Credenciales incorrectas. favor de ingresar con un usuario válido..';
+  }
+
+// Diálogo de error estilizado que limpia los campos cuando se cierra
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.black26, // Fondo oscuro y opaco
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0), // Bordes redondeados
+          ),
+          title: const Center(
+            child: Text(
+              'Error',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.redAccent, // Color del título en rojo para denotar error
+              ),
+            ),
+          ),
+          content: Text(
+            message,
+            style: const TextStyle(
+              fontSize: 18, // Tamaño de texto uniforme y fijo para accesibilidad
+              color: Colors.white70, // Texto en blanco tenue para buen contraste
+            ),
+            textAlign: TextAlign.center, // Centrado para mejor legibilidad
+          ),
+          actionsAlignment: MainAxisAlignment.center, // Centra el botón de cerrar
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _emailController.clear(); // Limpiar campo de correo
+                _passwordController.clear(); // Limpiar campo de contraseña
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+              ),
+              child: const Text(
+                'Cerrar',
+                style: TextStyle(
+                  fontSize: 18, // Tamaño del botón de cerrar
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent, // Color azul para hacer contraste
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
     final fontSizeProvider = Provider.of<FontSizeProvider>(context);
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
-
         title: Text(
           'Inicio de Sesión',
           style: TextStyle(
@@ -53,6 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
+            FocusScope.of(context).unfocus(); // Cierra el teclado
           },
         ),
         actions: [
@@ -62,7 +134,6 @@ class _LoginScreenState extends State<LoginScreen> {
               _showFontSizeDialog(context, fontSizeProvider);
             },
           ),
-
         ],
       ),
       backgroundColor: const Color.fromARGB(198, 137, 215, 249),
@@ -98,7 +169,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 20),
-                  // Campo de correo electrónico con ícono
                   TextField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -111,7 +181,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       filled: true,
                       fillColor: Colors.white,
-                      prefixIcon: const Icon(Icons.email, color: Colors.black54),
+                      prefixIcon:
+                          const Icon(Icons.email, color: Colors.black54),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30.0),
                       ),
@@ -122,7 +193,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 15),
-                  // Campo de contraseña con ícono y botón de visibilidad
                   TextField(
                     controller: _passwordController,
                     obscureText: !_isPasswordVisible,
@@ -138,7 +208,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       prefixIcon: const Icon(Icons.lock, color: Colors.black54),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                          _isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
                           color: Colors.black54,
                         ),
                         onPressed: () {
@@ -157,13 +229,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // Botón de inicio de sesión estilizado
                   ElevatedButton(
                     onPressed: _login,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blueAccent,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30.0),
                       ),
@@ -177,20 +249,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  // Link para recuperación de contraseña
-                  TextButton(
-                    onPressed: () {
-                      // Implementa la lógica para la recuperación de contraseña
-                    },
-                    child: Text(
-                      '¿Olvidaste tu contraseña?',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: fontSizeProvider.fontSize - 2,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -200,7 +258,8 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _showFontSizeDialog(BuildContext context, FontSizeProvider fontSizeProvider) {
+  void _showFontSizeDialog(
+      BuildContext context, FontSizeProvider fontSizeProvider) {
     showDialog(
       context: context,
       builder: (context) {
@@ -239,7 +298,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     inactiveColor: Colors.grey,
                     onChanged: (newSize) {
                       fontSizeProvider.setFontSize(newSize);
-                      setState(() {}); // Actualiza visualmente el diálogo
+                      setState(() {});
                     },
                   ),
                 ],

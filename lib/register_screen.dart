@@ -1,20 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'font_size_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
+
   @override
   _RegisterScreenState createState() => _RegisterScreenState();
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
 
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<void> _registerUser() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        // Crea el usuario en Firebase Authentication
+        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+
+        // Obtén el UID del usuario creado
+        String uid = userCredential.user!.uid;
+
+        // Almacena la información del usuario en Firestore
+        await _firestore.collection('users').doc(uid).set({
+          'firstName': _firstNameController.text.trim(),
+          'lastName': _lastNameController.text.trim(),
+          'email': _emailController.text.trim(),
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        // Muestra un mensaje de éxito y redirige a la pantalla de inicio de sesión
+        _showSuccessDialog(); // Muestra la alerta de éxito
+      } catch (e) {
+        _showErrorDialog('Error al registrar: ${e.toString()}');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,51 +126,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 20),
                     _buildTextField(
                       context,
+                      controller: _firstNameController,
                       hintText: 'Ingresa tu nombre',
                       icon: Icons.person,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Por favor ingresa tu nombre';
                         }
-                        if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
-                          return 'El nombre solo debe contener letras';
-                        }
-                        if (value.length < 2) {
-                          return 'El nombre debe tener al menos 2 caracteres';
-                        }
                         return null;
                       },
                     ),
                     const SizedBox(height: 15),
                     _buildTextField(
                       context,
+                      controller: _lastNameController,
                       hintText: 'Ingresa tu apellido',
                       icon: Icons.person_outline,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Por favor ingresa tu apellido';
                         }
-                        if (!RegExp(r'^[a-zA-Z]+$').hasMatch(value)) {
-                          return 'El apellido solo debe contener letras';
-                        }
-                        if (value.length < 2) {
-                          return 'El apellido debe tener al menos 2 caracteres';
-                        }
                         return null;
                       },
                     ),
                     const SizedBox(height: 15),
                     _buildTextField(
                       context,
+                      controller: _emailController,
                       hintText: 'Ingresa tu correo',
                       icon: Icons.email,
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Por favor ingresa tu correo';
-                        }
-                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                          return 'Ingresa un correo válido';
                         }
                         return null;
                       },
@@ -152,18 +178,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Por favor ingresa una contraseña';
-                        }
-                        if (value.length < 6) {
-                          return 'La contraseña debe tener al menos 6 caracteres';
-                        }
-                        if (!RegExp(r'(?=.*[A-Z])').hasMatch(value)) {
-                          return 'Debe contener al menos una letra mayúscula';
-                        }
-                        if (!RegExp(r'(?=.*\d)').hasMatch(value)) {
-                          return 'Debe contener al menos un número';
-                        }
-                        if (!RegExp(r'(?=.*[@$!%*?&])').hasMatch(value)) {
-                          return 'Debe contener al menos un carácter especial (@\$!%*?&)';
                         }
                         return null;
                       },
@@ -190,16 +204,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Registrado exitosamente!')),
-                          );
-                          Timer(const Duration(seconds: 2), () {
-                            Navigator.pushReplacementNamed(context, '/login');
-                          });
-                        }
-                      },
+                      onPressed: _registerUser,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black26,
                         foregroundColor: Colors.white,
@@ -223,6 +228,115 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Error', style: TextStyle(color: Colors.redAccent), textAlign: TextAlign.center),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: const Text('Cerrar', style: TextStyle(color: Colors.blue)),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _passwordController.clear();
+                _confirmPasswordController.clear();
+                _lastNameController.clear();
+                _firstNameController.clear();
+                _emailController.clear();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildTextField(
+      BuildContext context, {
+        required TextEditingController controller,
+        required String hintText,
+        required IconData icon,
+        TextInputType keyboardType = TextInputType.text,
+        String? Function(String?)? validator,
+      }) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: TextStyle(
+          fontSize: fontSizeProvider.fontSize,
+          color: Colors.black54,
+          fontWeight: FontWeight.bold,
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        prefixIcon: Icon(icon, color: Colors.black54),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30.0),
+          borderSide: const BorderSide(color: Colors.blue),
+        ),
+        errorStyle: TextStyle(
+          fontSize: fontSizeProvider.fontSize - 1,
+          color: Colors.red,
+        ),
+      ),
+      keyboardType: keyboardType,
+      validator: validator,
+    );
+  }
+
+  Widget _buildPasswordField(
+      BuildContext context, {
+        required TextEditingController controller,
+        required String hintText,
+        required IconData icon,
+        bool confirmPassword = false,
+        required bool isPasswordVisible,
+        required VoidCallback togglePasswordVisibility,
+        String? Function(String?)? validator,
+      }) {
+    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: TextStyle(
+          fontSize: fontSizeProvider.fontSize,
+          color: Colors.black54,
+          fontWeight: FontWeight.bold,
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        prefixIcon: Icon(icon, color: Colors.black54),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30.0),
+          borderSide: const BorderSide(color: Colors.blue),
+        ),
+        errorStyle: TextStyle(
+          fontSize: fontSizeProvider.fontSize - 1,
+          color: Colors.red,
+        ),
+        suffixIcon: IconButton(
+          icon: Icon(
+            isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+            color: Colors.black54,
+          ),
+          onPressed: togglePasswordVisibility,
+        ),
+      ),
+      obscureText: !isPasswordVisible,
+      validator: validator,
+    );
+  }
   void _showFontSizeDialog(BuildContext context, FontSizeProvider fontSizeProvider) {
     showDialog(
       context: context,
@@ -357,87 +471,57 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
-
-  Widget _buildTextField(
-      BuildContext context, {
-        required String hintText,
-        required IconData icon,
-        TextInputType keyboardType = TextInputType.text,
-        String? Function(String?)? validator,
-      }) {
-    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
-    return TextFormField(
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: TextStyle(
-          fontSize: fontSizeProvider.fontSize,
-          color: Colors.black54,
-          fontWeight: FontWeight.bold,
-        ),
-        filled: true,
-        fillColor: Colors.white,
-        prefixIcon: Icon(icon, color: Colors.black54),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30.0),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30.0),
-          borderSide: const BorderSide(color: Colors.blue),
-        ),
-        errorStyle: TextStyle(
-          fontSize: fontSizeProvider.fontSize - 1, // Ajusta el tamaño de los mensajes de error
-          color: Colors.red,
-        ),
-      ),
-      keyboardType: keyboardType,
-      validator: validator,
-    );
-  }
-
-  Widget _buildPasswordField(
-      BuildContext context, {
-        required TextEditingController controller,
-        required String hintText,
-        required IconData icon,
-        bool confirmPassword = false,
-        required bool isPasswordVisible,
-        required VoidCallback togglePasswordVisibility,
-        String? Function(String?)? validator,
-      }) {
-    final fontSizeProvider = Provider.of<FontSizeProvider>(context);
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: TextStyle(
-          fontSize: fontSizeProvider.fontSize,
-          color: Colors.black54,
-          fontWeight: FontWeight.bold,
-        ),
-        filled: true,
-        fillColor: Colors.white,
-        prefixIcon: Icon(icon, color: Colors.black54),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30.0),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30.0),
-          borderSide: const BorderSide(color: Colors.blue),
-        ),
-        errorStyle: TextStyle(
-          fontSize: fontSizeProvider.fontSize - 1,
-          color: Colors.red,
-        ),
-        suffixIcon: IconButton(
-          icon: Icon(
-            isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-            color: Colors.black54,
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.black26,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
           ),
-          onPressed: togglePasswordVisibility,
-        ),
-      ),
-      obscureText: !isPasswordVisible,
-      validator: validator,
+          title: const Center(
+            child: Text(
+              'Registro Exitoso',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.greenAccent,
+              ),
+            ),
+          ),
+          content: const Text(
+            'Tu cuenta ha sido creada exitosamente.',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.white70,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra el diálogo
+                Navigator.pushReplacementNamed(context, '/login'); // Redirige a login
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+              ),
+              child: const Text(
+                'OK',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
+
+
 }
