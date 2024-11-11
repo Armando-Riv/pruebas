@@ -1,9 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'welcome_screen.dart';
 import 'login_screen.dart';
 import 'register_screen.dart'; // Crea esta pantalla a continuación
 import 'package:pruebas/font_size_provider.dart';
+import 'home_screen.dart';
 import 'package:provider/provider.dart';
 
 
@@ -20,27 +22,27 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      initialRoute: '/',
-      routes: {
-        '/': (context) => WelcomeScreen(),
-        '/login': (context) => LoginScreen(),
-        '/register': (context) => RegisterScreen(), // Pantalla de registro
-        '/home': (context) => HomeScreen(), // Pantalla principal
-
-      },
-    );
-  }
+@override
+Widget build(BuildContext context) {
+  return MaterialApp(
+    initialRoute: '/',
+    routes: {
+      '/': (context) => StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasData) {
+            return HomeScreen(); // Redirige a HomeScreen si el usuario está autenticado
+          } else {
+            return WelcomeScreen(); // Muestra WelcomeScreen si no hay usuario autenticado
+          }
+        },
+      ),
+      '/login': (context) => LoginScreen(),
+      '/register': (context) => RegisterScreen(),
+      '/home': (context) => HomeScreen(), // Agrega HomeScreen a las rutas
+    },
+  );
 }
-
-class HomeScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Bienvenido')),
-      body: Center(child: Text('¡Inicio de sesión exitoso!')),
-    );
-  }
 }

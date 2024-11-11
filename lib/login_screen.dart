@@ -53,7 +53,8 @@ class _LoginScreenState extends State<LoginScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Colors.black26, // Fondo oscuro y opaco
+          backgroundColor: Colors.black26,
+          // Fondo oscuro y opaco
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20.0), // Bordes redondeados
           ),
@@ -63,19 +64,23 @@ class _LoginScreenState extends State<LoginScreen> {
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.redAccent, // Color del título en rojo para denotar error
+                color: Colors
+                    .redAccent, // Color del título en rojo para denotar error
               ),
             ),
           ),
           content: Text(
             message,
             style: const TextStyle(
-              fontSize: 18, // Tamaño de texto uniforme y fijo para accesibilidad
-              color: Colors.white70, // Texto en blanco tenue para buen contraste
+              fontSize: 18,
+              // Tamaño de texto uniforme y fijo para accesibilidad
+              color: Colors
+                  .white70, // Texto en blanco tenue para buen contraste
             ),
             textAlign: TextAlign.center, // Centrado para mejor legibilidad
           ),
-          actionsAlignment: MainAxisAlignment.center, // Centra el botón de cerrar
+          actionsAlignment: MainAxisAlignment.center,
+          // Centra el botón de cerrar
           actions: [
             TextButton(
               onPressed: () {
@@ -182,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       filled: true,
                       fillColor: Colors.white,
                       prefixIcon:
-                          const Icon(Icons.email, color: Colors.black54),
+                      const Icon(Icons.email, color: Colors.black54),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30.0),
                       ),
@@ -249,6 +254,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 18),
+                  TextButton(
+                    onPressed: _resetPasswordDialog,
+                    child: Text(
+                      '¿Olvidaste tu contraseña?',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: fontSizeProvider.fontSize - 2,
+                      ),
+                    ),
+                  )
+
                 ],
               ),
             ),
@@ -258,8 +275,8 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _showFontSizeDialog(
-      BuildContext context, FontSizeProvider fontSizeProvider) {
+  void _showFontSizeDialog(BuildContext context,
+      FontSizeProvider fontSizeProvider) {
     showDialog(
       context: context,
       builder: (context) {
@@ -284,7 +301,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Tamaño actual: ${fontSizeProvider.fontSize.toStringAsFixed(1)}',
+                    'Tamaño actual: ${fontSizeProvider.fontSize.toStringAsFixed(
+                        1)}',
                     style: const TextStyle(
                       fontSize: 18,
                       color: Colors.white70,
@@ -326,4 +344,87 @@ class _LoginScreenState extends State<LoginScreen> {
       },
     );
   }
+  void _resetPasswordDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final TextEditingController _emailController = TextEditingController();
+        return AlertDialog(
+          title: const Text('Restablecer Contraseña', textAlign: TextAlign.center),
+          content: TextField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            decoration: InputDecoration(
+              hintText: 'Ingresa tu correo electrónico',
+              prefixIcon: const Icon(Icons.email),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(20.0)),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                try {
+                  await FirebaseAuth.instance.sendPasswordResetEmail(email: _emailController.text.trim());
+                  Navigator.of(context).pop();
+                  _showInfoDialog('Correo de restablecimiento enviado. Revisa tu bandeja de entrada.');
+                } catch (e) {
+                  Navigator.of(context).pop();
+                  _showErrorDialog('Error al enviar el correo de restablecimiento. Verifica el correo ingresado.');
+                }
+              },
+              child: const Text('Enviar', style: TextStyle(color: Colors.blue)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  void _showInfoDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.black26,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          title: const Center(
+            child: Text(
+              'Información',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.blueAccent,
+              ),
+            ),
+          ),
+          content: Text(
+            message,
+            style: const TextStyle(
+              fontSize: 18,
+              color: Colors.white70,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'Cerrar',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.blueAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
+
+
+
