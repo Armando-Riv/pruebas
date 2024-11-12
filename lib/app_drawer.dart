@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:pruebas/device_check_screen.dart';
 import 'about_screen.dart';
 import 'font_size_provider.dart';
 import 'home_screen.dart';
 import 'user_profile_screen.dart';
+import 'device_check_screen.dart';
 
 class AppDrawer extends StatelessWidget {
   final FontSizeProvider fontSizeProvider;
@@ -41,7 +43,8 @@ class AppDrawer extends StatelessWidget {
             context,
             icon: Icons.person_add,
             text: 'Agregar Paciente',
-            onTap: () => _showUnderConstructionDialog(context, 'Agregar Usuario'),
+            targetRoute: DeviceCheckScreen.routeName,
+            onTap: () => Navigator.of(context).pushNamed(DeviceCheckScreen.routeName),
           ),
           _buildDrawerItem(
             context,

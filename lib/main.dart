@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:pruebas/device_check_screen.dart';
 import 'about_screen.dart';
 import 'welcome_screen.dart';
 import 'login_screen.dart';
@@ -46,6 +49,7 @@ Widget build(BuildContext context) {
       '/home': (context) => HomeScreen(), // Agrega HomeScreen a las rutas
       '/about': (context) => AboutScreen(), // Define la ruta para AboutScreen
       '/user':(context)=>UserProfileScreen(),
+      '/check': (context)=>DeviceCheckScreen(),
     },
   );
 }
