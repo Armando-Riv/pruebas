@@ -47,38 +47,91 @@ class _DeviceCheckScreenState extends State<DeviceCheckScreen> {
             ? CircularProgressIndicator() // Animación de carga
             : _devicesAvailable
             ? Column(
+
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 80),
-            const SizedBox(height: 20),
-            const Text(
-              "Dispositivo disponible",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // Redirige a la pantalla de agregar paciente
-                Navigator.pushNamed(context, '/addPatient');
-              },
-              child: const Text("Continuar para agregar paciente"),
-            ),
-          ],
+
+
+           Container(
+        padding: const EdgeInsets.all(20.0),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+        BoxShadow(
+        color: Colors.grey.withOpacity(0.5),
+        blurRadius: 10,
+        offset: const Offset(0, 5),
+      ),
+
+
+    ],),
+        child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children:[
+
+        const Icon(Icons.check_circle, color: Colors.green, size: 80),
+               const SizedBox(height: 20),
+               const Text(
+                 "Dispositivos disponible",
+                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+               ),
+               ElevatedButton(
+                 onPressed: () {
+                   // Redirige a la pantalla de agregar paciente
+                   Navigator.pushNamed(context, '/addPatient');
+                 },
+                 child: const Text("Continuar para agregar paciente"),
+               ),
+
+
+         ],    ),
+
+           ),
+
+    ],
+
         )
             : Column(
+
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error, color: Colors.red, size: 80),
-            const SizedBox(height: 20),
-            const Text(
-              "No hay dispositivos disponibles",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+
+
+            Container(
+              padding: const EdgeInsets.all(20.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    blurRadius: 1,
+                    offset: const Offset(0, 5),
+                  ),
+
+
+                ],),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children:[
+
+                  const Icon(Icons.error_rounded, color: Colors.red, size: 80),
+                  const SizedBox(height: 20),
+                  const Text(
+                    " no hay dispositivos disponibles",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+
+
+
+                ],    ),
+
             ),
-            ElevatedButton(
-              onPressed: _checkDeviceAvailability,
-              child: const Text("Reintentar"),
-            ),
+
           ],
-        ),
+
+        )
       ),
     );
   }
