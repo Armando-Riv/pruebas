@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:pruebas/patient_reg_screen.dart';
@@ -13,10 +14,18 @@ import 'home_screen.dart';
 import 'package:provider/provider.dart';
 import 'user_profile_screen.dart';
 
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Maneja notificaciones cuando la app está en segundo plano
+  print("Notificación en segundo plano: ${message.notification?.title}");
+}
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   print("Firebase inicializado con éxito");
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
 
   // Inicializar el proveedor de tamaño de fuente y cargar preferencias
   final fontSizeProvider = FontSizeProvider();

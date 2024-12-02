@@ -2,16 +2,84 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'app_drawer.dart';
+import 'fall_history_screen.dart';
 import 'font_size_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = '/home';
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _initializeNotifications();
+  }
+
+  Future<void> _initializeNotifications() async {
+    // Solicitar permisos (para iOS principalmente)
+    FirebaseMessaging.instance.requestPermission();
+
+    // Manejar notificaciones en primer plano
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("Notificación en primer plano: ${message.notification?.title}");
+      _mostrarDialogo(
+        title: message.notification?.title,
+        body: message.notification?.body,
+      );
+    });
+
+    // Manejar notificaciones cuando se abre desde segundo plano
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print("Notificación abierta: ${message.notification?.title}");
+      // Puedes redirigir a una pantalla específica aquí si es necesario
+    });
+
+    // Obtener y guardar el token de FCM
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await obtenerYGuardarToken(user.uid);
+    }
+
+    // Manejar cuando la app se abre desde una notificación inicial
+    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) {
+      print("Notificación al abrir la app: ${initialMessage.notification?.title}");
+      // Maneja datos iniciales aquí si es necesario
+    }
+
+    // Actualizar token automáticamente si cambia
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+      print("Token actualizado: $newToken");
+      if (user != null) {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+          'fcmToken': newToken,
+        });
+      }
+    });
+  }
+
+  void _mostrarDialogo({String? title, String? body}) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title ?? "Notificación"),
+        content: Text(body ?? "Sin contenido"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("Cerrar"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final fontSizeProvider = Provider.of<FontSizeProvider>(context);
@@ -82,6 +150,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemCount: users.length,
                 itemBuilder: (ctx, index) {
                   final user = users[index].data() as Map<String, dynamic>;
+                  final userId = snapshot.data!.docs[index].id;
+
                   return Card(
                     margin: const EdgeInsets.all(8.0),
                     child: ListTile(
@@ -94,7 +164,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         'Presiona para más detalles',
                         style: TextStyle(fontSize: fontSizeProvider.fontSize - 2),
                       ),
-                      onTap: () => _showUserDetails(context, user, fontSizeProvider),
+                      onTap: () => _showUserDetails(context, user, userId, fontSizeProvider),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _confirmDeleteUser(userId),
+                      ),
                     ),
                   );
                 },
@@ -114,7 +188,43 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showUserDetails(BuildContext context, Map<String, dynamic> user,
+  void _confirmDeleteUser(String userId) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Eliminar Usuario'),
+        content: const Text('¿Estás seguro de que deseas eliminar este usuario?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              _deleteUser(userId);
+              Navigator.of(ctx).pop();
+            },
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteUser(String userId) async {
+    try {
+      await FirebaseFirestore.instance.collection('monitored_users').doc(userId).delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Usuario eliminado exitosamente.')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al eliminar usuario: $e')),
+      );
+    }
+  }
+
+  void _showUserDetails(BuildContext context, Map<String, dynamic> user, String userId,
       FontSizeProvider fontSizeProvider) {
     showModalBottomSheet(
       context: context,
@@ -131,26 +241,14 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-
                 Text(
                   'Detalles del Usuario',
-                  textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: fontSizeProvider.fontSize + 4,
                     fontWeight: FontWeight.bold,
-
-
                   ),
                 ),
                 const SizedBox(height: 10),
-                Text(
-                  'Información Personal',
-                  style: TextStyle(
-                    fontSize: fontSizeProvider.fontSize + 2,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const Divider(),
                 _buildUserDetail(
                   'Nombre Completo',
                   user['personalInformation']['fullName'],
@@ -167,66 +265,25 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontSizeProvider,
                 ),
                 _buildUserDetail(
-                  'Domicilio',
+                  'Dirección',
                   user['personalInformation']['address'],
                   fontSizeProvider,
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  'Información Médica',
-                  style: TextStyle(
-                    fontSize: fontSizeProvider.fontSize + 2,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const Divider(),
-                _buildUserDetail(
-                  'Condiciones Médicas',
-                  user['medicalInformation']['medicalConditions'],
-                  fontSizeProvider,
-                ),
-                _buildUserDetail(
-                  'Alergias',
-                  user['medicalInformation']['allergies'],
-                  fontSizeProvider,
-                ),
-                if (user['medicalInformation']['medications'] != null &&
-                    (user['medicalInformation']['medications'] as List<dynamic>).isNotEmpty)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 10),
-                      Text(
-                        'Medicamentos:',
-                        style: TextStyle(
-                          fontSize: fontSizeProvider.fontSize + 2,
-                          fontWeight: FontWeight.bold,
+                const SizedBox(height: 20),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => FallHistoryScreen(
+                            userId: userId,
+                            userName: user['personalInformation']['fullName'],
+                          ),
                         ),
-                      ),
-                      ..._buildMedicationsDetails(
-                        user['medicalInformation']['medications'] as List<dynamic>,
-                        fontSizeProvider,
-                      ),
-                    ],
+                      );
+                    },
+                    child: const Text('Ver Historial de Caídas'),
                   ),
-                const SizedBox(height: 10),
-                Text(
-                  'Información Adicional',
-                  style: TextStyle(
-                    fontSize: fontSizeProvider.fontSize + 2,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const Divider(),
-                _buildUserDetail(
-                  'Notas',
-                  user['additionalInformation']['notes'],
-                  fontSizeProvider,
-                ),
-                _buildUserDetail(
-                  'Recomendaciones',
-                  user['additionalInformation']['recommendations'],
-                  fontSizeProvider,
                 ),
               ],
             ),
@@ -238,15 +295,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildUserDetail(
       String label, dynamic value, FontSizeProvider fontSizeProvider) {
-    // Maneja valores que pueden ser una lista o un string
-    String displayValue;
-    if (value is List<dynamic>) {
-      displayValue = value.isNotEmpty ? value.join(', ') : 'No especificado';
-    } else if (value is String) {
-      displayValue = value.isNotEmpty ? value : 'No especificado';
-    } else {
-      displayValue = 'No especificado';
-    }
+    String displayValue = value is String && value.isNotEmpty
+        ? value
+        : (value is List && value.isNotEmpty ? value.join(', ') : 'No especificado');
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -270,20 +321,16 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
 
-  List<Widget> _buildMedicationsDetails(
-      List<dynamic> medications, FontSizeProvider fontSizeProvider) {
-    return medications.map((medication) {
-      final name = medication['name'] ?? 'Sin Nombre';
-      final dosage = medication['dosage'] ?? 'Sin Dosis';
-      final frequency = medication['frequency'] ?? 'Sin Frecuencia';
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4.0),
-        child: Text(
-          '- $name (Dosis: $dosage, Frecuencia: $frequency)',
-          style: TextStyle(fontSize: fontSizeProvider.fontSize),
-        ),
-      );
-    }).toList();
+Future<void> obtenerYGuardarToken(String userId) async {
+  String? token = await FirebaseMessaging.instance.getToken();
+  print("Token FCM: $token");
+
+  if (token != null) {
+    await FirebaseFirestore.instance.collection('users').doc(userId).update({
+      'fcmToken': token,
+    });
+    print("Token guardado en Firestore.");
   }
 }
