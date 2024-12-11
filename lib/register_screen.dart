@@ -503,7 +503,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Cierra el diálogo
-                Navigator.pushReplacementNamed(context, '/login'); // Redirige a login
+                Navigator.pushReplacementNamed(context, '/home'); // Redirige a login
               },
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white,

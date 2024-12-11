@@ -13,6 +13,8 @@ import 'package:pruebas/font_size_provider.dart';
 import 'home_screen.dart';
 import 'package:provider/provider.dart';
 import 'user_profile_screen.dart';
+import 'patient_details_screen.dart';
+
 
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -65,6 +67,7 @@ class MyApp extends StatelessWidget {
         '/about': (context) => AboutScreen(),
         '/user': (context) => UserProfileScreen(),
         '/startReg': (context) => PatientRegistrationScreen(),
+
       },
     );
   }
