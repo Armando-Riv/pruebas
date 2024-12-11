@@ -22,10 +22,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _initializeNotifications() async {
-    // Solicitar permisos (para iOS principalmente)
+// Solicitar permisos (para iOS principalmente)
     FirebaseMessaging.instance.requestPermission();
 
-    // Manejar notificaciones en primer plano
+// Manejar notificaciones en primer plano
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print("Notificación en primer plano: ${message.notification?.title}");
       _mostrarDialogo(
@@ -34,30 +34,34 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     });
 
-    // Manejar notificaciones cuando se abre desde segundo plano
+// Manejar notificaciones cuando se abre desde segundo plano
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       print("Notificación abierta: ${message.notification?.title}");
-      // Puedes redirigir a una pantalla específica aquí si es necesario
+// Puedes redirigir a una pantalla específica aquí si es necesario
     });
 
-    // Obtener y guardar el token de FCM
+// Obtener y guardar el token de FCM
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       await obtenerYGuardarToken(user.uid);
     }
 
-    // Manejar cuando la app se abre desde una notificación inicial
+// Manejar cuando la app se abre desde una notificación inicial
     final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
-      print("Notificación al abrir la app: ${initialMessage.notification?.title}");
-      // Maneja datos iniciales aquí si es necesario
+      print(
+          "Notificación al abrir la app: ${initialMessage.notification?.title}");
+// Maneja datos iniciales aquí si es necesario
     }
 
-    // Actualizar token automáticamente si cambia
+// Actualizar token automáticamente si cambia
     FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
       print("Token actualizado: $newToken");
       if (user != null) {
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .update({
           'fcmToken': newToken,
         });
       }
@@ -155,16 +159,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   return Card(
                     margin: const EdgeInsets.all(8.0),
                     child: ListTile(
-                      leading: Icon(Icons.person, size: fontSizeProvider.fontSize + 10),
+                      leading: Icon(Icons.person,
+                          size: fontSizeProvider.fontSize + 10),
                       title: Text(
                         user['personalInformation']['fullName'] ?? 'Sin Nombre',
                         style: TextStyle(fontSize: fontSizeProvider.fontSize),
                       ),
                       subtitle: Text(
                         'Presiona para más detalles',
-                        style: TextStyle(fontSize: fontSizeProvider.fontSize - 2),
+                        style:
+                            TextStyle(fontSize: fontSizeProvider.fontSize - 2),
                       ),
-                      onTap: () => _showUserDetails(context, user, userId, fontSizeProvider),
+                      onTap: () => _showUserDetails(
+                          context, user, userId, fontSizeProvider),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete, color: Colors.red),
                         onPressed: () => _confirmDeleteUser(userId),
@@ -193,7 +200,8 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Eliminar Usuario'),
-        content: const Text('¿Estás seguro de que deseas eliminar este usuario?'),
+        content:
+            const Text('¿Estás seguro de que deseas eliminar este usuario?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
@@ -213,7 +221,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _deleteUser(String userId) async {
     try {
-      await FirebaseFirestore.instance.collection('monitored_users').doc(userId).delete();
+      await FirebaseFirestore.instance
+          .collection('monitored_users')
+          .doc(userId)
+          .delete();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Usuario eliminado exitosamente.')),
       );
@@ -224,8 +235,26 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _showUserDetails(BuildContext context, Map<String, dynamic> user, String userId,
-      FontSizeProvider fontSizeProvider) {
+  void _showUserDetails(BuildContext context, Map<String, dynamic> user,
+      String userId, FontSizeProvider fontSizeProvider) {
+    if (user == null) {
+      // Mostrar mensaje de error si los datos del usuario son nulos
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Error'),
+          content: const Text('No se pudo cargar la información del usuario.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cerrar'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -242,33 +271,71 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Detalles del Usuario',
+                  'Detalles del Paciente',
                   style: TextStyle(
                     fontSize: fontSizeProvider.fontSize + 4,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 10),
-                _buildUserDetail(
-                  'Nombre Completo',
-                  user['personalInformation']['fullName'],
-                  fontSizeProvider,
-                ),
-                _buildUserDetail(
-                  'Fecha de Nacimiento',
-                  user['personalInformation']['dateOfBirth'],
-                  fontSizeProvider,
-                ),
-                _buildUserDetail(
-                  'Género',
-                  user['personalInformation']['gender'],
-                  fontSizeProvider,
-                ),
-                _buildUserDetail(
-                  'Dirección',
-                  user['personalInformation']['address'],
-                  fontSizeProvider,
-                ),
+                _buildUserDetailSection('Información Personal', [
+                  _buildUserDetail(
+                      'Nombre Completo',
+                      user['personalInformation']?['fullName'] ??
+                          'No especificado'),
+                  _buildUserDetail(
+                      'Dirección',
+                      user['personalInformation']?['address'] ??
+                          'No especificado'),
+                  _buildUserDetail(
+                      'Fecha de Nacimiento',
+                      user['personalInformation']?['dateOfBirth'] ??
+                          'No especificado'),
+                  _buildUserDetail(
+                      'Género',
+                      user['personalInformation']?['gender'] ??
+                          'No especificado'),
+                ]),
+                const SizedBox(height: 20),
+                _buildUserDetailSection('Información Médica', [
+                  _buildUserDetail(
+                      'Alergias',
+                      user['medicalInformation']?['allergies'] ??
+                          'No especificado'),
+                  _buildUserDetail(
+                    'Historial de Hospitalización',
+                    user['medicalInformation']?['hospitalizationHistory']
+                    ?['reason'] ??
+                        'No especificado',
+                  ),
+                  _buildUserDetail(
+                      'Condiciones Médicas',
+                      user['medicalInformation']?['medicalConditions'] ??
+                          'No especificado'),
+                ]),
+                const SizedBox(height: 20),
+                _buildUserDetailSection('Contacto Médico', [
+                  _buildUserDetail(
+                    'Nombre',
+                    user['medicalInformation']?['medicalContact']?['name'] ?? 'No especificado',
+                  ),
+                  _buildUserDetail(
+                    'Teléfono',
+                    user['medicalInformation']?['medicalContact']?['phone'] ?? 'No especificado',
+                  ),
+                ]),
+
+                const SizedBox(height: 20),
+                _buildUserDetailSection('Información Adicional', [
+                  _buildUserDetail(
+                      'Notas',
+                      user['additionalInformation']?['notes'] ??
+                          'No especificado'),
+                  _buildUserDetail(
+                      'Recomendaciones',
+                      user['additionalInformation']?['recommendations'] ??
+                          'No especificado'),
+                ]),
                 const SizedBox(height: 20),
                 Center(
                   child: ElevatedButton(
@@ -277,7 +344,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         MaterialPageRoute(
                           builder: (context) => FallHistoryScreen(
                             userId: userId,
-                            userName: user['personalInformation']['fullName'],
+                            userName: user['personalInformation']?['fullName'] ??
+                                'Sin Nombre',
                           ),
                         ),
                       );
@@ -293,12 +361,25 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildUserDetail(
-      String label, dynamic value, FontSizeProvider fontSizeProvider) {
-    String displayValue = value is String && value.isNotEmpty
-        ? value
-        : (value is List && value.isNotEmpty ? value.join(', ') : 'No especificado');
 
+  Widget _buildUserDetailSection(String sectionTitle, List<Widget> details) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          sectionTitle,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        ...details,
+      ],
+    );
+  }
+
+  Widget _buildUserDetail(String label, dynamic value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -306,31 +387,29 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Text(
             '$label: ',
-            style: TextStyle(
-              fontSize: fontSizeProvider.fontSize,
+            style: const TextStyle(
               fontWeight: FontWeight.bold,
             ),
           ),
           Expanded(
             child: Text(
-              displayValue,
-              style: TextStyle(fontSize: fontSizeProvider.fontSize),
+              value != null ? value.toString() : 'No especificado',
             ),
           ),
         ],
       ),
     );
   }
-}
 
-Future<void> obtenerYGuardarToken(String userId) async {
-  String? token = await FirebaseMessaging.instance.getToken();
-  print("Token FCM: $token");
+  Future<void> obtenerYGuardarToken(String userId) async {
+    String? token = await FirebaseMessaging.instance.getToken();
+    print("Token FCM: $token");
 
-  if (token != null) {
-    await FirebaseFirestore.instance.collection('users').doc(userId).update({
-      'fcmToken': token,
-    });
-    print("Token guardado en Firestore.");
+    if (token != null) {
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'fcmToken': token,
+      });
+      print("Token guardado en Firestore.");
+    }
   }
 }

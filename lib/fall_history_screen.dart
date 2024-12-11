@@ -21,7 +21,7 @@ class FallHistoryScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Historial de Eventos: $userName',
+          'Historial de  $userName',
           style: TextStyle(fontSize: fontSizeProvider.fontSize),
         ),
         centerTitle: true,
@@ -266,7 +266,6 @@ class FallHistoryScreen extends StatelessWidget {
     ];
     return months[month - 1];
   }
-
   Future<void> _handleAction(
       BuildContext context,
       String eventId,
@@ -274,6 +273,7 @@ class FallHistoryScreen extends StatelessWidget {
       String description,
       DateTime? timestamp,
       ) async {
+    // Pedir al usuario una nueva descripción
     String? newDescription = await _askForDescription(context);
     if (newDescription == null || newDescription.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -283,8 +283,30 @@ class FallHistoryScreen extends StatelessWidget {
     }
 
     try {
+      // Obtenemos el documento actual del evento para verificar sus valores
+      final eventDoc = await FirebaseFirestore.instance
+          .collection('monitored_users')
+          .doc(userId)
+          .collection('fall_history')
+          .doc(eventId)
+          .get();
+
+      final eventData = eventDoc.data();
+
+      if (eventData == null) {
+        throw Exception("El evento no existe.");
+      }
+
+      // Mantener valores actuales si ya están definidos
+      final existingConfirmationTimestamp =
+      eventData['confirmationTimestamp']?.toDate();
+      final existingTimeToConfirm = eventData['timeToConfirm'];
+
+      // Si no hay timestamp previo, calcular el tiempo de confirmación
       final now = DateTime.now();
-      int timeToConfirm = timestamp != null ? now.difference(timestamp).inSeconds : 0;
+      final int newTimeToConfirm = timestamp != null
+          ? now.difference(timestamp).inSeconds
+          : 0;
 
       await FirebaseFirestore.instance
           .collection('monitored_users')
@@ -294,9 +316,9 @@ class FallHistoryScreen extends StatelessWidget {
           .update({
         'description': newDescription,
         'confirmed': true,
-        'confirmationTimestamp': now,
+        'confirmationTimestamp': existingConfirmationTimestamp ?? now,
         'confirmedBy': 'Usuario',
-        'timeToConfirm': timeToConfirm,
+        'timeToConfirm': existingTimeToConfirm ?? newTimeToConfirm,
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -308,6 +330,7 @@ class FallHistoryScreen extends StatelessWidget {
       );
     }
   }
+
 
   Future<String?> _askForDescription(BuildContext context) async {
     String? description;
