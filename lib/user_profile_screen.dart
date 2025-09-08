@@ -81,22 +81,26 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.black26,
+        backgroundColor: const Color.fromARGB(255, 49, 102, 113),
       ),
       drawer: AppDrawer(
         fontSizeProvider: fontSizeProvider,
         currentRoute: UserProfileScreen.routeName,
       ),
-      backgroundColor: const Color.fromARGB(198, 137, 215, 249),
+
+      backgroundColor: const Color.fromARGB(198, 212, 240, 255),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
         padding: const EdgeInsets.all(16.0),
+
         child: SingleChildScrollView(
+
           child: Container(
+
             padding: const EdgeInsets.all(20.0),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const  Color.fromARGB(255, 49, 102, 113),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -186,7 +190,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         style: TextStyle(
           fontSize: fontSizeProvider.fontSize + 1,
           fontWeight: FontWeight.bold,
-          color: Colors.black87,
+          color: Colors.white
+          ,
         ),
       ),
     );

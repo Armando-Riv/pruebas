@@ -16,21 +16,26 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: const Color.fromARGB(250, 137, 215, 249),
+      backgroundColor:const Color.fromARGB(255, 165, 186, 198),
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          DrawerHeader(
-            decoration: BoxDecoration(color: Colors.blueGrey[700]),
+          Container(
+            color: const Color.fromARGB(255, 42, 86, 96),
+            height: 100, // 👈 Control the height here
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
               'Opciones',
               style: TextStyle(
                 fontSize: fontSizeProvider.fontSize + 5,
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
+
               ),
             ),
           ),
+        SizedBox(height: 10,),
           // Opciones del menú
           _buildDrawerItem(
             context,
@@ -115,7 +120,7 @@ class AppDrawer extends StatelessWidget {
       ),
       tileColor: isSelected ? Colors.blueGrey : null,
       selected: isSelected,
-      selectedTileColor: Colors.blueGrey[700],
+      selectedTileColor: const Color.fromARGB(255, 42, 86, 96),
       onTap: () {
         if (!isSelected) {
           Navigator.pushReplacementNamed(context, route);

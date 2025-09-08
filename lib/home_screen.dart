@@ -87,13 +87,13 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.black26,
+        backgroundColor: const Color.fromARGB(255, 49, 102, 113),
       ),
       drawer: AppDrawer(
         fontSizeProvider: fontSizeProvider,
         currentRoute: HomeScreen.routeName,
       ),
-      backgroundColor: const Color.fromARGB(198, 137, 215, 249),
+      backgroundColor: const Color.fromARGB(198, 212, 240, 255),
       body: FutureBuilder<User?>(
         future: FirebaseAuth.instance.currentUser != null
             ? Future.value(FirebaseAuth.instance.currentUser)
@@ -167,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       },
                       trailing: IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
+                        icon: const Icon(Icons.delete, color: Colors.blueGrey),
                         onPressed: () => _confirmDeleteUser(userId),
                       ),
                     ),
