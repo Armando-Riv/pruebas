@@ -1,3 +1,5 @@
+// armando-riv/pruebas/pruebas-38caa71216303abb0a7200dd8da65615cd041ce8/lib/app_drawer.dart
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
@@ -7,21 +9,30 @@ import 'font_size_provider.dart';
 import 'home_screen.dart';
 import 'user_profile_screen.dart';
 
+// Constantes de color IMSS
+const Color kPrimaryColor = Color(0xFF00584E);
+const Color kSecondaryColor = Color(0xFF1B8247); // Verde Secundario
+const Color kBackgroundColor = Color(0xFFF0F0F0);
+
+
 class AppDrawer extends StatelessWidget {
   final FontSizeProvider fontSizeProvider;
   final String currentRoute;
+  final String? userType; // Campo para el rol del usuario
 
-  AppDrawer({required this.fontSizeProvider, required this.currentRoute});
+  AppDrawer({required this.fontSizeProvider, required this.currentRoute, this.userType});
 
   @override
   Widget build(BuildContext context) {
+    final isCaregiver = userType == 'Cuidador'; // Determinar si es cuidador
+
     return Drawer(
-      backgroundColor:const Color.fromARGB(255, 165, 186, 198),
+      backgroundColor: kBackgroundColor, // Fondo institucional
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
           Container(
-            color: const Color.fromARGB(255, 42, 86, 96),
+            color: kPrimaryColor, // Color primario
             height: 100, // 👈 Control the height here
             alignment: Alignment.centerLeft,
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -35,7 +46,7 @@ class AppDrawer extends StatelessWidget {
               ),
             ),
           ),
-        SizedBox(height: 10,),
+          const SizedBox(height: 10,),
           // Opciones del menú
           _buildDrawerItem(
             context,
@@ -49,12 +60,15 @@ class AppDrawer extends StatelessWidget {
             title: 'Perfil',
             route: UserProfileScreen.routeName,
           ),
-          _buildDrawerItem(
-            context,
-            icon: Icons.person_add,
-            title: 'Registrar Paciente',
-            route: PatientRegistrationScreen.routeName,
-          ),
+          // Mostrar solo si es Cuidador
+          if (isCaregiver)
+            _buildDrawerItem(
+              context,
+              icon: Icons.person_add,
+              title: 'Registrar Paciente',
+              route: PatientRegistrationScreen.routeName,
+            ),
+
           _buildDrawerItem(
             context,
             icon: Icons.info,
@@ -63,37 +77,38 @@ class AppDrawer extends StatelessWidget {
           ),
           // Ajustar tamaño de letra
           ListTile(
-            leading: const Icon(Icons.format_size),
+            leading: const Icon(Icons.format_size, color: kPrimaryColor),
             title: Text(
               'Ajustar tamaño de letra',
-              style: TextStyle(fontSize: fontSizeProvider.fontSize),
+              style: TextStyle(fontSize: fontSizeProvider.fontSize, color: Colors.black87),
             ),
             onTap: () => _showFontSizeDialog(context, fontSizeProvider),
           ),
           // Cerrar sesión
           ListTile(
-            leading: const Icon(Icons.logout),
+            leading: const Icon(Icons.logout, color: Colors.red),
             title: Text(
               'Cerrar Sesión',
-              style: TextStyle(fontSize: fontSizeProvider.fontSize),
+              style: TextStyle(fontSize: fontSizeProvider.fontSize, color: Colors.black87),
             ),
             onTap: () {
               showDialog(
                 context: context,
                 builder: (ctx) => AlertDialog(
-                  title: const Text('Cerrar Sesión'),
+                  title: Text('Cerrar Sesión', style: TextStyle(color: kPrimaryColor)),
                   content: const Text('¿Estás seguro de que deseas cerrar sesión?'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(ctx).pop(),
-                      child: const Text('Cancelar'),
+                      child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
                     ),
                     TextButton(
                       onPressed: () {
                         FirebaseAuth.instance.signOut();
-                        Navigator.of(context).pushReplacementNamed('/');
+                        // Asegura que la ruta de inicio maneje la redirección después de cerrar sesión
+                        Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
                       },
-                      child: const Text('Cerrar Sesión'),
+                      child: const Text('Cerrar Sesión', style: TextStyle(color: Colors.red)),
                     ),
                   ],
                 ),
@@ -109,7 +124,7 @@ class AppDrawer extends StatelessWidget {
       {required IconData icon, required String title, required String route}) {
     final bool isSelected = currentRoute == route;
     return ListTile(
-      leading: Icon(icon, color: isSelected ? Colors.white : Colors.black54),
+      leading: Icon(icon, color: isSelected ? Colors.white : kPrimaryColor),
       title: Text(
         title,
         style: TextStyle(
@@ -118,9 +133,9 @@ class AppDrawer extends StatelessWidget {
           color: isSelected ? Colors.white : Colors.black,
         ),
       ),
-      tileColor: isSelected ? Colors.blueGrey : null,
+      tileColor: isSelected ? kPrimaryColor : null,
       selected: isSelected,
-      selectedTileColor: const Color.fromARGB(255, 42, 86, 96),
+      selectedTileColor: kPrimaryColor, // Color primario
       onTap: () {
         if (!isSelected) {
           Navigator.pushReplacementNamed(context, route);
@@ -136,7 +151,7 @@ class AppDrawer extends StatelessWidget {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              backgroundColor: Colors.black26,
+              backgroundColor: kPrimaryColor, // Color primario
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20.0),
               ),
@@ -164,7 +179,7 @@ class AppDrawer extends StatelessWidget {
                     min: 16.0,
                     max: 26.0,
                     value: fontSizeProvider.fontSize,
-                    activeColor: Colors.blueAccent,
+                    activeColor: kSecondaryColor, // Color secundario
                     inactiveColor: Colors.grey,
                     onChanged: (newSize) {
                       fontSizeProvider.setFontSize(newSize);
@@ -180,12 +195,12 @@ class AppDrawer extends StatelessWidget {
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.white,
                   ),
-                  child: const Text(
+                  child: Text(
                     'Cerrar',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blueAccent,
+                      color: kSecondaryColor, // Color secundario
                     ),
                   ),
                 ),

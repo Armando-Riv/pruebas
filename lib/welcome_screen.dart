@@ -1,5 +1,12 @@
+// armando-riv/pruebas/pruebas-38caa71216303abb0a7200dd8da65615cd041ce8/lib/welcome_screen.dart
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+
+// Constantes de color IMSS (Verde principal y fondo claro)
+const Color kPrimaryColor = Color(0xFF00584E);
+const Color kBackgroundColor = Color(0xFFF0F0F0);
 
 
 // Widget personalizado para los botones
@@ -17,7 +24,7 @@ class CustomButton extends StatelessWidget {
     required this.text,
     required this.onPressed,
     this.textSize =25,
-    this.backgroundColor = const Color.fromARGB(255, 0, 39, 152),
+    this.backgroundColor = kPrimaryColor, // Aplicar color primario por defecto
     this.textColor = Colors.white,
   }) : super(key: key);
 
@@ -50,24 +57,28 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       resizeToAvoidBottomInset: false,
-      backgroundColor: const Color.fromARGB(198, 137, 215, 249),
+      backgroundColor: kBackgroundColor, // Fondo IMSS
       body: LayoutBuilder(
         builder: (context, constraints) {
           bool isHorizontal = constraints.maxWidth > constraints.maxHeight;
 
           return Center(
+
             child: isHorizontal
                 ? Row(
+
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-
+                const SizedBox(height: 100),
                 Padding(
                   padding: const EdgeInsets.only(right: 20.0),
                   child: Image.asset(
                     'assets/images/logo_inicio.png',
                     height: 300,
                     width: 300,
+                    color: kPrimaryColor, // Color al logo
                   ),
                 ),
                 const SizedBox(height: 100),
@@ -80,7 +91,7 @@ class WelcomeScreen extends StatelessWidget {
                       onPressed: () {
                         Navigator.pushNamed(context, '/login');
                       },
-                      backgroundColor: Colors.black38,
+                      backgroundColor: kPrimaryColor, // Color primario
                       textColor: Colors.white,
                     ),
                     const SizedBox(height: 60),
@@ -90,8 +101,8 @@ class WelcomeScreen extends StatelessWidget {
                       onPressed: () {
                         Navigator.pushNamed(context, '/register');
                       },
-                      backgroundColor: Colors.white,
-                      textColor: Colors.blueGrey,
+                      backgroundColor: Colors.white24,
+                      textColor: kPrimaryColor, // Color primario
                     ),
                   ],
                 ),
@@ -101,22 +112,24 @@ class WelcomeScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                const SizedBox(height: 80),
                 Padding(
                   padding: const EdgeInsets.only(top: 50.0),
                   child: Image.asset(
                     'assets/images/logo_inicio.png',
-                    height: 500,
-                    width: 500,
+                    height: 300, // Se redujo el tamaño del logo para mejor ajuste en vertical
+                    width: 300,
+                    color: kPrimaryColor, // Color al logo
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 50),
                 CustomButton(
                   icon: Icons.login_rounded,
                   text: 'Iniciar sesión',
                   onPressed: () {
                     Navigator.pushNamed(context, '/login');
                   },
-                  backgroundColor: Colors.black38,
+                  backgroundColor: kPrimaryColor, // Color primario
                   textColor: Colors.white,
                 ),
                 const SizedBox(height: 30),
@@ -126,8 +139,8 @@ class WelcomeScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.pushNamed(context, '/register');
                   },
-                  backgroundColor: Colors.white,
-                  textColor: Colors.blueGrey,
+                  backgroundColor: Colors.white60,
+                  textColor: kPrimaryColor, // Color primario
                 ),
                 const SizedBox(height: 50),
               ],

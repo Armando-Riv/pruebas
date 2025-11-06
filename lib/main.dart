@@ -1,3 +1,5 @@
+// armando-riv/pruebas/pruebas-38caa71216303abb0a7200dd8da65615cd041ce8/lib/main.dart
+
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,8 +16,7 @@ import 'home_screen.dart';
 import 'package:provider/provider.dart';
 import 'user_profile_screen.dart';
 import 'patient_details_screen.dart';
-
-
+import 'package:cloud_firestore/cloud_firestore.dart'; // Importación necesaria
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Maneja notificaciones cuando la app está en segundo plano
@@ -55,7 +56,27 @@ class MyApp extends StatelessWidget {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasData) {
-              return HomeScreen(); // Redirige a HomeScreen si el usuario está autenticado
+              // Lógica: Verificar el rol del usuario para dirigir a HomeScreen
+              final user = snapshot.data!;
+              return FutureBuilder<DocumentSnapshot>(
+                future: FirebaseFirestore.instance.collection('users').doc(user.uid).get(),
+                builder: (context, userSnapshot) {
+                  if (userSnapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (userSnapshot.hasData && userSnapshot.data!.exists) {
+                    final userData = userSnapshot.data!.data() as Map<String, dynamic>;
+                    final userType = userData['userType'];
+
+                    // Pasar el rol a HomeScreen
+                    return HomeScreen(userType: userType);
+                  }
+
+                  // Si el usuario está autenticado pero falta el doc de usuario, regresa a la bienvenida
+                  return WelcomeScreen();
+                },
+              );
             } else {
               return WelcomeScreen(); // Muestra WelcomeScreen si no hay usuario autenticado
             }
